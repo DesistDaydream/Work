@@ -1,0 +1,14 @@
+- hosts: test
+  gather_facts: no
+  tasks: 
+  - name: 测试主机是否可用
+    block: 
+    - name: 获取变量
+      shell: ls /
+      register: units
+    - debug: 
+        msg: "{{units}}"
+  - name: 测试变量 
+    debug: 
+      var: ansible_play_host
+    # when: inventory_hostname is search("master")

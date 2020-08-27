@@ -1,0 +1,52 @@
+- name: 创建developers组
+  group:
+    name: developers
+    gid: 500
+
+- name: 创建yanfa用户
+  user:
+    name: yanfa
+    group: developers
+    uid: 500
+    password: "$6$mysecretsalt$usBdY0yx1LFEmX1WNdbC1OfjKHwKkD2Y60KQ0qh9chMpiQmVtopO7SpisA.qUUuxmCNHfB7bfxUjy0uC7R7GS."
+
+- name: 给/usr/local目录设定acl
+  shell: setfacl -R -d -m g:developers:rwx /usr/local && setfacl -R  -m g:developers:rwx /usr/local
+
+- name: 设定命令别名
+  template:
+    src: for_developers.sh.j2
+    dest: /etc/profile.d/for_developers.sh
+
+- name: 设定ulimit参数
+  block:
+  - lineinfile:
+      dest: /etc/security/limits.conf
+      insertafter: EOF
+      regexp: "@developers soft nofile  524288"
+      line: "@developers soft nofile  524288"
+  - lineinfile:
+      dest: /etc/security/limits.conf
+      insertafter: EOF
+      regexp: "@developers hard nofile  524288"
+      line: "@developers hard nofile  524288"
+  - lineinfile:
+      dest: /etc/security/limits.conf
+      insertafter: EOF
+      regexp: '\* soft nofile 1000000'
+      line: '* soft nofile 1000000'
+  - lineinfile:
+      dest: /etc/security/limits.conf
+      insertafter: EOF
+      regexp: '\* hard nofile 1000000'
+      line: '* hard nofile 1000000'
+  - lineinfile:
+      dest: /etc/security/limits.conf
+      insertafter: EOF
+      regexp: '\* soft nproc 1000000'
+      line: '* soft nproc 1000000'
+  - lineinfile:
+      dest: /etc/security/limits.conf
+      insertafter: EOF
+      regexp: '\* hard nproc 1000000'
+      line: '* hard nproc 1000000'

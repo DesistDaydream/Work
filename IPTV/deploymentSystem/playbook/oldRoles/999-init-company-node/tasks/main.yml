@@ -1,0 +1,91 @@
+- name: 安装docker
+  include_tasks: docker.yml
+- name: 设置主机名
+  hostname:
+    name: '{{inventory_hostname}}'
+- name: 修改sysctl参数
+  template: 
+    src: k8s-sysctl.conf.j2
+    dest: /etc/sysctl.d/k8s-sysctl.conf
+- shell: sysctl -p /etc/sysctl.d/*
+- name: 修改limits参数
+  blockinfile:
+    path: /etc/security/limits.conf
+    block: |
+      @developers  soft  nofile  524288
+      @developers hard nofile   524288
+      * soft nofile 1000000
+      * hard nofile 1000000
+      * soft nproc  1000000
+      * hard nproc  1000000
+- name: 添加hosts解析
+  blockinfile:
+    path: /etc/hosts
+    block: |
+      10.0.13.77 iptv-k8s-master-1 iptv-k8s-master-1.tjiptv.net
+      10.0.13.82 iptv-k8s-master-2 iptv-k8s-master-2.tjiptv.net
+      10.0.13.78 iptv-k8s-etcd-1   iptv-k8s-etcd-1.tjiptv.net
+      10.0.13.80 iptv-k8s-etcd-2   iptv-k8s-etcd-2.tjiptv.net
+      10.0.13.81 iptv-k8s-etcd-3   iptv-k8s-etcd-3.tjiptv.net
+      10.0.13.79 iptv-k8s-node-1   iptv-k8s-node-1.tjiptv.net
+      10.0.13.83 iptv-k8s-node-2   iptv-k8s-node-2.tjiptv.net
+      10.0.13.85 iptv-k8s-node-3   iptv-k8s-node-3.tjiptv.net
+      10.0.13.86 iptv-k8s-node-4   iptv-k8s-node-4.tjiptv.net
+      10.0.13.91 iptv-k8s-node-5   iptv-k8s-node-5.tjiptv.net
+      10.0.13.92 iptv-k8s-node-6   iptv-k8s-node-6.tjiptv.net
+      10.0.13.93 iptv-k8s-node-7   iptv-k8s-node-7.tjiptv.net
+      10.0.13.97 iptv-k8s-node-8   iptv-k8s-node-8.tjiptv.net
+      10.0.13.98 iptv-k8s-node-9   iptv-k8s-node-9.tjiptv.net
+      10.0.13.99 iptv-k8s-node-10  iptv-k8s-node-10.tjiptv.net
+      10.0.13.100 iptv-k8s-node-11 iptv-k8s-node-11.tjiptv.net
+      10.0.13.101 iptv-k8s-node-12 iptv-k8s-node-12.tjiptv.net
+      10.0.13.102 iptv-k8s-node-13 iptv-k8s-node-13.tjiptv.net
+      10.0.13.119 iptv-k8s-node-14 iptv-k8s-node-14.tjiptv.net
+      10.0.13.120 iptv-k8s-node-15 iptv-k8s-node-15.tjiptv.net
+      10.0.13.121 iptv-k8s-node-16 iptv-k8s-node-16.tjiptv.net
+      10.0.13.122 iptv-k8s-node-17 iptv-k8s-node-17.tjiptv.net
+      10.0.13.123 iptv-k8s-node-18 iptv-k8s-node-18.tjiptv.net
+      10.0.13.124 iptv-k8s-node-19 iptv-k8s-node-19.tjiptv.net
+      10.0.13.153 iptv-k8s-node-20 iptv-k8s-node-20.tjiptv.net
+      10.0.13.170 registry-k8s.wisetv.com.cn
+      10.0.13.159 registry-k8s1.wisetv.com.cn
+      10.0.13.160 registry-k8s2.wisetv.com.cn
+- name: 创建k8s用户
+  user: 
+    name: k8s
+    password: "{{ 'k8s@tjiptv' | password_hash('sha512', 'mysecretsalt') }}"
+- name: 修改visudo添加权限
+  blockinfile:
+    path: /etc/sudoers
+    block: |
+      Cmnd_Alias KUBERNETES = /usr/bin/systemctl start kube*, /usr/bin/systemctl stop kube*, /usr/bin/systemctl       daemon-reload, /usr/bin/systemctl restart kube*, /usr/bin/systemctl status kube*, /usr/bin/systemctl enable kube*, /usr/bin/systemctl disable kube*
+      
+      ## Docker management
+      Cmnd_Alias DOCKER = /usr/bin/systemctl start docker*, /usr/bin/systemctl stop docker*, /usr/bin/systemctl restart       docker*, /usr/bin/systemctl enable docker*, /usr/bin/systemctl disable docker*, /usr/bin/docker *
+      
+      ## Flannel management
+      Cmnd_Alias FLANNEL = /usr/bin/systemctl start flanneld*, /usr/bin/systemctl stop flanneld*, /usr/bin/systemctl restart       flanneld*, /usr/bin/systemctl enable flanneld*, /usr/bin/systemctl disable flanneld*
+      
+      k8s   ALL=(root)      NOPASSWD:KUBERNETES, DOCKER, FLANNEL
+- name: 修改visudo内容
+  lineinfile:
+    dest: /etc/sudoers
+    regexp: "(Defaults\\s*always_query_group_plugin)"
+    line: '#\1'
+    backrefs: yes
+- name: 创建存放证书路径
+  file:
+    path: /etc/ssl/k8s
+    owner: k8s
+    group: k8s
+    state: directory
+- name: 上传证书到node节点
+  copy:
+    src: "{{item}}"
+    dest: /etc/ssl/k8s/
+  with_fileglob:
+  - /root/playbook/roles/init-complany-node/files/*
+- name: 安装flannel
+  include_tasks: flannel.yml
+- name: 安装kubernetes组件并配置
+  include_tasks: kubernetes.yml

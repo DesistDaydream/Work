@@ -1,0 +1,8 @@
+- hosts: test
+  vars:
+    GROUP_NAME: "{{ group_names }}"
+  gather_facts: no
+  tasks: 
+  - debug: 
+      var: hostvars
+   # when: {% groups.{{GROUP_NAME}} | length == 1 %}

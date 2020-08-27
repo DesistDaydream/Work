@@ -1,0 +1,46 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: pushgateway
+  namespace: monitoring
+  labels:
+    prometheus: pushgateway
+spec: 
+  endpoints: 
+  - interval: 15s
+    relabelings:
+    - action: replace
+      regex: (.*)
+      replacement: $1
+      sourceLabels:
+      - __meta_kubernetes_endpoint_hostname
+      targetLabel: instance  
+  selector: 
+    matchLabels:
+      prometheus: pushgateway
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pushgateway
+  namespace: monitoring
+  labels:
+    prometheus: pushgateway
+spec:
+  ports:
+  - port: 9091
+
+---
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: pushgateway
+  namespace: monitoring
+  labels:
+    prometheus: pushgateway
+subsets:
+- addresses:
+  - ip: 10.10.100.110
+    hostname: k8s-monitor-agent-test
+  ports:
+  - port: 9091

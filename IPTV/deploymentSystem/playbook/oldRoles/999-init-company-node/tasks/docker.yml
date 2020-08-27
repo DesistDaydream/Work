@@ -1,0 +1,20 @@
+- name: 安装docker依赖
+  yum:
+    name: yum-utils
+    update_cache: 'yes'
+    state: 'latest'
+- name: 添加docker源
+  shell: yum-config-manager --add-repo https://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
+- name: 安装docker
+  shell: yum install --setopt=obsoletes=0 docker-ce-17.03.2.ce-1.el7.centos docker-ce-selinux-17.03.2.ce-1.el7.centos -y
+- name: 配置docker
+  template:
+    src: docker.service.j2
+    dest: /usr/lib/systemd/system/docker.service
+- name: 启动docker
+  systemd:
+    name: docker
+    state: restarted
+    daemon_reload: yes
+    enabled: yes 
+  ignore_errors: yes

@@ -1,0 +1,57 @@
+- name: 创建存放文件的目录
+  file:
+    path: /home/k8s/kubernetes-node
+    state: directory
+    owner: k8s
+    group: k8s
+- name: 拷贝kubernetes所需文件
+  copy:
+    src: /root/kubernetes-node-linux-amd64.tar.gz
+    dest: /home/k8s/
+    owner: k8s
+    group: k8s
+- name: 解压文件
+  unarchive:
+    src: /root/kubernetes-node-linux-amd64.tar.gz
+    dest: /home/k8s/kubernetes-node
+    owner: k8s
+    group: k8s
+- name: 拷贝kubelet与kube-proxy命令到/usr/bin/下
+  shell: cp -r /home/k8s/kubernetes-node/kubernetes/node/bin/{kubelet,kube-proxy} /usr/local/bin/
+- name: 创建kubelet目录
+  file:
+    path: /var/lib/kubelet
+    state: directory
+- name: 配置kubelet
+  template:
+    src: kubelet.service.j2
+    dest: /usr/lib/systemd/system/kubelet.service
+- name: 配置kubelet日志目录
+  file:
+    path: /var/log/kubelet
+    state: directory
+    owner: k8s
+    group: k8s
+- name: 创建kube-proxy目录
+  file:
+    path: /var/lib/kube-proxy
+    state: directory
+- name: 配置kube-proxy
+  template:
+    src: kube-proxy.service.j2
+    dest: /usr/lib/systemd/system/kube-proxy.service
+- name: 配置kube-proxy日志目录
+  file:
+    path: /var/log/kube-proxy
+    state: directory
+    owner: k8s
+    group: k8s
+- name: 启动kubelet与kube-proxy服务
+  systemd:
+    name: "{{item}}"
+    daemon_reload: yes
+    state: started
+    enabled: yes
+  with_items:
+  - kubelet
+  - kube-proxy

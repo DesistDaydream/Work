@@ -1,0 +1,17 @@
+[vs_19floor]
+v44.tjiptv.net ansible_host=10.254.7.154
+v45.tjiptv.net ansible_host=10.254.7.155
+v46.tjiptv.net ansible_host=10.254.7.156
+v47.tjiptv.net ansible_host=10.254.7.157
+v48.tjiptv.net ansible_host=10.254.7.158
+v49.tjiptv.net ansible_host=10.254.7.159
+v50.tjiptv.net ansible_host=10.254.7.160
+v51.tjiptv.net ansible_host=10.254.7.161
+v52.tjiptv.net ansible_host=10.254.7.162
+v53.tjiptv.net ansible_host=10.254.7.163
+v-userpoint-1.tjiptv.net ansible_host=10.254.7.238
+v-userpoint-2.tjiptv.net ansible_host=10.254.7.239
+
+[vs_19floor:vars]
+ansible_user=root
+ansible_password=XXXX

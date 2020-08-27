@@ -1,0 +1,62 @@
+- name: 配置docker环境
+  block:
+  - name: 配置主机名
+    hostname: 
+      name: '{{ inventory_hostname }}'
+  - name: 关闭防火墙
+    systemd: 
+      name: "{{item}}"
+      state: stopped
+      enabled: no
+    with_items: 
+    - iptables
+    - firewalld
+  - name: 禁用SELinux
+    lineinfile:
+      dest: /etc/selinux/config
+      regexp: "SELINUX=*"
+      line: "SELINUX=disabled"
+  - name: 关闭SELinux
+    shell: "setenforce 0"
+    failed_when: false
+  - name: 配置docker相关sysctl参数
+    template: 
+      src: docker-sysctl.conf.j2
+      dest: /etc/sysctl.d/docker-sysctl.conf
+    notify:
+    - 读取内核参数
+
+- name: 安装docker所需依赖
+  yum: 
+    name: ['yum-utils', 'device-mapper-persistent-data', 'lvm2'] 
+    update_cache: 'yes'
+    state: 'latest'
+
+- name: 添加docker源
+  shell: yum-config-manager --add-repo http://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
+
+- name: 安装docker-ce
+  yum:
+    name: 'docker-ce-{{docker.version}}'
+    state: present
+
+- name: 配置docker启动参数
+  block: 
+  - lineinfile:
+      dest: /usr/lib/systemd/system/docker.service
+      regexp: '^ExecStartPost='
+      insertbefore: '^ExecReload='
+      line: 'ExecStartPost=/usr/sbin/iptables -P FORWARD ACCEPT'
+  - lineinfile:
+      dest: /usr/lib/systemd/system/docker.service
+      regexp: '^(ExecStart=/usr/bin/dockerd)'
+      line: '\1 {{docker.options}}'
+      backrefs: yes
+
+- name: 创建docker配置文件目录
+  file: name=/etc/docker state=directory
+
+- name: 配置daemon.json
+  template: src=daemon.json.j2 dest=/etc/docker/daemon.json
+  notify:
+  - 重启docker服务

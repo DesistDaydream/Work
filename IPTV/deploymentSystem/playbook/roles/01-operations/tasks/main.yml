@@ -1,0 +1,103 @@
+- name: 设置主机名
+  hostname:
+    name: '{{inventory_hostname}}'
+
+- name: 更新系统
+  yum:
+    name: '*'
+    state: latest
+    update_cache: 'yes'
+
+- name: 安装运维工具
+  yum:
+    name: ['bash-completion','chrony','ipvsadm','net-snmp','net-snmp-utils','psmisc','tcpdump','telnet','vim']
+    state: latest
+
+- name: 配置服务自启
+  block:
+  - name: 关闭指定自启
+    systemd:
+      name: "{{item}}"
+      enabled: 'no'
+    loop:
+    - auditd.service
+    - firewalld.service
+  - name: 自启指定服务
+    systemd:
+      name: "{{item}}"
+      enabled: 'yes'
+      state: started
+    loop:
+    - serial-getty@ttyS0.service
+
+- name: 配置运维工具
+  block:
+  - name: 创建v3用户nm
+    shell: net-snmp-create-v3-user -ro -A nm@tjiptv -X nm@tjiptv -a SHA -x AES nm
+    ignore_errors: yes
+  - name: 配置snmpd
+    lineinfile:
+      dest: /etc/snmp/snmpd.conf
+      regexp: "(access  notConfigGroup \"\"      any       noauth    exact  systemview none none)"
+      line: '#\1'
+      backrefs: yes
+    notify:
+    - 重启snmpd服务
+  - name: 配置sshd
+    lineinfile:
+      dest: /etc/ssh/sshd_config
+      regexp: ".*UseDNS.*"
+      line: "UseDNS no"
+    notify: 
+    - 重启sshd服务
+  tags:
+  - toolsConfig
+
+- name: 配置chrony
+  block:
+  - name: 注册系统版本信息
+    shell: cat /etc/redhat-release | awk '{print $4}' | awk -F. '{print $1}'
+    register: RELEASE
+  # - debug:
+  #     msg: "{{ RELEASE.stdout_lines }}"
+  - name: centos7配置chrony第一步
+    lineinfile:
+      dest: /etc/chrony.conf
+      regexp: "^server.*"
+      line: "server 182.92.12.11 iburst"
+    when: RELEASE.stdout_lines[0] == "7"
+  - name: centos7配置chrony第二步
+    lineinfile:
+      dest: /etc/chrony.conf
+      regexp: "^server .*centos.*"
+      state: absent
+    notify:
+    - 重启chronyd服务
+    when: RELEASE.stdout_lines[0] == "7"
+  - name: centos8配置chrony
+    lineinfile:
+      dest: /etc/chrony.conf
+      regexp: "pool 2.centos.pool.ntp.org iburst"
+      line: "server 182.92.12.11 iburst"
+    notify:
+    - 重启chronyd服务
+    when: RELEASE.stdout_lines[0] == "8"
+  tags:
+  - chrony
+
+- name: 配置系统
+  block:
+  - name: 禁用SELinux
+    lineinfile:
+      dest: /etc/selinux/config
+      regexp: "^SELINUX=.*"
+      line: "SELINUX=disabled"
+  - name: 关闭SELinux
+    shell: "setenforce 0"
+    failed_when: false
+  - name: 配置内核参数
+    template:
+      src: ope-sysctl.conf.j2
+      dest: /etc/sysctl.d/ope-sysctl.conf
+  - name: 应用内核参数
+    shell: sysctl -p /etc/sysctl.d/*

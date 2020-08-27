@@ -1,0 +1,35 @@
+- name: 安装虚拟化环境软件包
+  yum:
+    name: "@^virtualization-host-environment"
+    state: latest
+- name: 创建qemu-kvm软链接
+  file:
+    src: /usr/libexec/qemu-kvm
+    dest: /usr/local/bin/qemu-kvm
+    state: link
+- name: 安装其余虚拟化管理程序
+  yum:
+    name:
+    - xorg-x11-xauth
+    - xorg-x11-server-utils
+    - virt-manager
+    - qemu-img
+    - virt-install
+    - libguestfs
+    state: latest
+- name: 启动进程
+  systemd:
+    name: "{{item}}"
+    state: started
+    enabled: yes
+  with_items:
+  - libvirtd
+  - ksm
+  - ksmtuned
+- name: 删除libvirt默认网桥
+  shell: virsh net-destroy default && virsh net-undefine default
+  ignore_errors: yes
+- name: 重启libvirt
+  systemd:
+    name: libvirtd
+    state: restarted

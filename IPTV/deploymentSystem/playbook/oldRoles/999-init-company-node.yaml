@@ -1,0 +1,4 @@
+- hosts: test
+  gather_facts: no
+  roles:
+  - init-complany-node

@@ -1,0 +1,50 @@
+[test]
+lichenhao ansible_host=10.10.100.200
+#centos-8-init ansible_host=10.10.100.249
+[test:vars]
+ansible_user=root
+ansible_password=XXXX
+
+[test_vs]
+vs-1.test.tjiptv.net ansible_host=10.10.100.201
+vs-2.test.tjiptv.net ansible_host=10.10.100.202
+vs-3.test.tjiptv.net ansible_host=10.10.100.203
+vs-4.test.tjiptv.net ansible_host=10.10.100.204
+vs-5.test.tjiptv.net ansible_host=10.10.100.205
+vs-6.test.tjiptv.net ansible_host=10.10.100.206
+[test_vs:vars]
+ansible_user=root
+ansible_password=XXXX
+
+[test_master]
+master-1.test.tjiptv.net ansible_host=10.10.100.101 KEEPALIVED_STATE=MASTER KEEPALIVED_PRIORITY=101 
+master-2.test.tjiptv.net ansible_host=10.10.100.102 KEEPALIVED_STATE=BACKUP KEEPALIVED_PRIORITY=100
+master-3.test.tjiptv.net ansible_host=10.10.100.103 KEEPALIVED_STATE=BACKUP KEEPALIVED_PRIORITY=99
+
+[test_node]
+node-1.test.tjiptv.net ansible_host=10.10.100.111
+node-2.test.tjiptv.net ansible_host=10.10.100.112
+node-3.test.tjiptv.net ansible_host=10.10.100.113
+node-4.test.tjiptv.net ansible_host=10.10.100.114
+node-5.test.tjiptv.net ansible_host=10.10.100.115
+node-6.test.tjiptv.net ansible_host=10.10.100.116
+
+[test_all_node:children]
+test_master
+test_node
+[test_all_node:vars]
+ansible_user=root
+ansible_password=XXXX
+
+[test_registry]
+registry-1.test.tjiptv.net ansible_host=10.10.100.108
+[test_registry:vars]
+ansible_user=root
+ansible_password=XXXXX
+
+[test_node_dr]
+dr-1.test.tjiptv.net ansible_host=10.10.100.105 LVS_VIP=10.10.100.107
+dr-2.test.tjiptv.net ansible_host=10.10.100.106 LVS_VIP=10.10.100.107
+[test_node_dr:vars]
+ansible_user=root
+ansible_password=XXXX

@@ -1,0 +1,56 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: dellhw-metrics
+  namespace: monitoring
+  labels:
+    prometheus: dellhw-metrics
+spec: 
+  endpoints: 
+  - interval: 15s
+    relabelings:
+    - action: replace
+      regex: (.*)
+      replacement: $1
+      sourceLabels:
+      - __meta_kubernetes_endpoint_hostname
+      targetLabel: instance  
+  selector: 
+    matchLabels:
+      prometheus: dellhw-metrics
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dellhw-metrics
+  namespace: monitoring
+  labels:
+    prometheus: dellhw-metrics
+spec:
+  ports:
+  - port: 9137
+    nodePort: 30007 #测试用，暴露出来看看能不能获取到metric的信息
+  type: NodePort
+
+---
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: dellhw-metrics
+  namespace: monitoring
+  labels:
+    prometheus: dellhw-metrics
+subsets:
+- addresses:
+  - ip: 10.10.100.201
+    hostname: vs-1-test
+  - ip: 10.10.100.202
+    hostname: vs-2-test
+  - ip: 10.10.100.203
+    hostname: vs-3-test
+  - ip: 10.10.100.204
+    hostname: vs-4-test
+  - ip: 10.10.100.205
+    hostname: vs-5-test
+  ports:
+  - port: 9137   

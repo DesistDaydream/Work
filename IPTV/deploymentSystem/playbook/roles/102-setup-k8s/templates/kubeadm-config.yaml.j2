@@ -1,0 +1,21 @@
+apiVersion: kubeadm.k8s.io/v1beta2
+kind: InitConfiguration
+bootstrapTokens:
+- groups:
+  - system:bootstrappers:kubeadm:default-node-token
+  ttl: 0s
+  usages:
+  - signing
+  - authentication
+---
+apiVersion: kubeadm.k8s.io/v1beta2
+kind: ClusterConfiguration
+kubernetesVersion: {{ KUBERNETES_VERSION }}
+controlPlaneEndpoint: {% if MASTER_VIP is none %}{{ansible_host}}{% else %}{{ MASTER_VIP }}{% endif %}:6443
+imageRepository: registry.aliyuncs.com/google_containers
+networking:
+  podSubnet: {{ PODSUBNET }}
+---
+apiVersion: kubeproxy.config.k8s.io/v1alpha1
+kind: KubeProxyConfiguration
+mode: "{{ PROXY.MODE }}"

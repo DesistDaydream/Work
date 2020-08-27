@@ -1,0 +1,4 @@
+- name: 拷贝文件
+  script: install_cifs.sh
+  register: info
+- debug: var=info.stdout_lines

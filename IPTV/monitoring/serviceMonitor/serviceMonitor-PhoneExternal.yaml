@@ -1,0 +1,52 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: phone-external-metrics
+  namespace: monitoring
+  labels:
+    prometheus: phone-external-metrics
+spec: 
+  endpoints: 
+  - interval: 15s
+    relabelings:
+    - action: replace
+      regex: (.*)
+      replacement: $1
+      sourceLabels:
+      - __meta_kubernetes_endpoint_hostname
+      targetLabel: instance  
+  selector: 
+    matchLabels:
+      prometheus: phone-external-metrics
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: phone-external-metrics
+  namespace: monitoring
+  labels:
+    prometheus: phone-external-metrics
+spec:
+  ports:
+  - port: 9100
+
+---
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: phone-external-metrics
+  namespace: monitoring
+  labels:
+    prometheus: phone-external-metrics
+subsets:
+- addresses:
+  - ip: 10.10.16.12
+    hostname: hls-kg-dev-phone
+  - ip: 10.10.16.13
+    hostname: wowza-kg-dev-phone
+  - ip: 10.10.17.10
+    hostname: hls-ht-dev-phone
+  - ip: 10.10.17.12
+    hostname: wowza-ht-dev-phone
+  ports:
+  - port: 9100   

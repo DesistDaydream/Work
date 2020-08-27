@@ -1,0 +1,29 @@
+[Unit]
+Description=Kubernetes Kubelet
+Documentation=https://github.com/GoogleCloudPlatform/kubernetes
+After=docker.service
+Requires=docker.service
+
+[Service]
+WorkingDirectory=/var/lib/kubelet
+ExecStart=/usr/local/bin/kubelet \
+    --cgroup-driver=cgroupfs \
+    --hostname-override=iptv-k8s-node-11.tjiptv.net \
+    --pod-infra-container-image=registry-k8s1.wisetv.com.cn/google_containers/pause-amd64:3.0 \
+    --experimental-bootstrap-kubeconfig=/etc/ssl/k8s/bootstrap.kubeconfig \
+    --kubeconfig=/etc/ssl/k8s/kubelet.kubeconfig \
+    --cert-dir=/etc/ssl/k8s \
+    --cluster_dns=10.254.0.254 \
+    --cluster_domain=cluster.local. \
+    --hairpin-mode promiscuous-bridge \
+    --allow-privileged=true \
+    --fail-swap-on=false \
+    --serialize-image-pulls=false \
+    --logtostderr=false \
+    --log-dir=/var/log/kubelet \
+    --max-pods=512 \
+    --v=2 \
+    --feature-gates=RotateKubeletClientCertificate=true,RotateKubeletServerCertificate=true \
+    --rotate-certificates=true
+[Install]
+WantedBy=multi-user.target

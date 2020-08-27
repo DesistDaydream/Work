@@ -1,0 +1,31 @@
+[k8s_master]
+master-1.k8s.cloud.tjiptv.net ansible_host=10.0.9.201 KEEPALIVED_STATE=MASTER KEEPALIVED_PRIORITY=101
+master-2.k8s.cloud.tjiptv.net ansible_host=10.0.9.202 KEEPALIVED_STATE=BACKUP KEEPALIVED_PRIORITY=100
+master-3.k8s.cloud.tjiptv.net ansible_host=10.0.9.203 KEEPALIVED_STATE=BACKUP KEEPALIVED_PRIORITY=99
+
+[k8s_node]
+node-01.k8s.cloud.tjiptv.net ansible_host=10.0.9.211
+node-02.k8s.cloud.tjiptv.net ansible_host=10.0.9.212
+node-03.k8s.cloud.tjiptv.net ansible_host=10.0.9.213
+node-04.k8s.cloud.tjiptv.net ansible_host=10.0.9.214
+node-05.k8s.cloud.tjiptv.net ansible_host=10.0.9.215
+node-06.k8s.cloud.tjiptv.net ansible_host=10.0.9.216
+node-07.k8s.cloud.tjiptv.net ansible_host=10.0.9.217
+node-08.k8s.cloud.tjiptv.net ansible_host=10.0.9.218
+node-09.k8s.cloud.tjiptv.net ansible_host=10.0.9.219
+node-10.k8s.cloud.tjiptv.net ansible_host=10.0.9.220
+
+[k8s_registry]
+registry-1.k8s.cloud.tjiptv.net ansible_host=10.10.9.55
+registry-2.k8s.cloud.tjiptv.net ansible_host=10.10.9.56
+[k8s_registry:vars]
+ansible_user=root
+ansible_password=XXX
+
+[k8s_all_node:children]
+k8s_master
+k8s_node
+#k8s_registry
+[k8s_all_node:vars]
+ansible_user=root
+ansible_password=XXXX

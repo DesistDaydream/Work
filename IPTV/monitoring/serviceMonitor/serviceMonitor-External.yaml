@@ -1,0 +1,54 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: external-metrics
+  namespace: monitoring
+  labels:
+    prometheus: external-metrics
+spec: 
+  endpoints: 
+  - interval: 15s
+    relabelings:
+    - action: replace
+      regex: (.*)
+      replacement: $1
+      sourceLabels:
+      - __meta_kubernetes_endpoint_hostname
+      targetLabel: instance  
+  selector: 
+    matchLabels:
+      prometheus: external-metrics
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: external-metrics
+  namespace: monitoring
+  labels:
+    prometheus: external-metrics
+spec:
+  ports:
+  - port: 9100
+    nodePort: 30005 #测试用，暴露出来看看能不能获取到metric的信息
+  type: NodePort
+
+---
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: external-metrics
+  namespace: monitoring
+  labels:
+    prometheus: external-metrics
+subsets:
+- addresses:
+  - ip: 10.0.9.208
+    hostname: registry-1-k8s-cloud
+  - ip: 10.0.9.209
+    hostname: registry-2-k8s-cloud
+  - ip: 10.0.9.205
+    hostname: dr-1-k8s-cloud
+  - ip: 10.0.9.206
+    hostname: dr-2-k8s-cloud
+  ports:
+  - port: 9100

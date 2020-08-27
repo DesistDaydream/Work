@@ -1,0 +1,38 @@
+- name: 配置HA
+  block:
+  - name: 安装keepalived
+    yum:
+      name: keepalived
+      state: latest
+  - name: 发送HA相关配置文件
+    template: 
+      src: "{{item.src}}"
+      dest: "{{item.dest}}"
+    with_items:
+    - {src: 'keepalived.conf.j2', dest: '/etc/keepalived/keepalived.conf'}
+    - {src: 'check_apiserver.sh.j2', dest: '/etc/keepalived/check_apiserver.sh'}
+  - name: 配置keepalived日志
+    lineinfile:
+      dest: /etc/sysconfig/keepalived
+      regexp: '^KEEPALIVED_OPTIONS='
+      line: 'KEEPALIVED_OPTIONS="-D -d -S 0"'
+  - name: 配置rsyslog的keepalived日志
+    template:
+      src: keepalived-log.conf.j2
+      dest: /etc/rsyslog.d/keepalived-log.conf
+  - name: 配置rsyslog日志轮替
+    template:
+      src: keepalived-logrotate.j2
+      dest: /etc/logrotate.d/keepalived-logrotate
+  - name: 重启rsyslog和keepalived
+    systemd:
+      name: "{{item}}"
+      state: restarted
+      enabled: yes
+    with_items: ["rsyslog", "keepalived"]  
+  when: inventory_hostname is search("master-")
+
+- name: 发送kubeadm-config文件
+  template:
+    src: kubeadm-config.yaml.j2
+    dest: /root/kubeadm-config.yaml

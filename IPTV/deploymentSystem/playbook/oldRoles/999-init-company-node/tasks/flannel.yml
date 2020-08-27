@@ -1,0 +1,18 @@
+- name: 拷贝flannel二进制文件
+  copy:
+    src: /root/flannel-0.9.1-1.x86_64.rpm
+    dest: /root/
+- name: 安装flannel
+  shell: rpm -ivh /root/flannel-0.9.1-1.x86_64.rpm
+  ignore_errors: yes
+- name: 配置flannel
+  template:
+    src: flanneld.j2
+    dest: /etc/sysconfig/flanneld
+    mode: '0644'
+- name: 启动flannel
+  systemd: 
+    name: flanneld
+    state: started
+    daemon_reload: yes
+    enabled: yes 

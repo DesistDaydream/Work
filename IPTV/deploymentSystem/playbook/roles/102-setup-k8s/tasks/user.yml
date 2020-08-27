@@ -1,0 +1,33 @@
+- name: 创建k8s组
+  group:
+    name: k8s
+    gid: 1000
+
+- name: 创建k8s用户
+  user:
+    name: k8s
+    uid: 1000
+    group: k8s
+    password: "$6$mysecretsalt$usBdY0yx1LFEmX1WNdbC1OfjKHwKkD2Y60KQ0qh9chMpiQmVtopO7SpisA.qUUuxmCNHfB7bfxUjy0uC7R7GS."
+
+- name: 修改visudo内容
+  lineinfile:
+    dest: /etc/sudoers
+    regexp: "(Defaults\\s*always_query_group_plugin)"
+    line: '#\1'
+    backrefs: yes
+
+- name: 修改visudo添加权限
+  blockinfile:
+    path: /etc/sudoers
+    block: |
+      ## Kubernetes management
+      Cmnd_Alias KUBERNETES = /usr/bin/systemctl * kube*, /usr/bin/kube*
+
+      ## Docker management
+      Cmnd_Alias DOCKER = /usr/bin/systemctl * docker*, /usr/bin/docker *
+
+      k8s   ALL=(root)      NOPASSWD:KUBERNETES, DOCKER
+
+- name: 配置日志权限
+  shell: setfacl -R -m u:k8s:rx /var/log

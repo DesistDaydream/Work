@@ -1,0 +1,44 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: federate
+  namespace: monitoring
+  labels:
+    prometheus: federate
+spec:
+  selector:
+    matchLabels:
+      prometheus: federate
+  endpoints:
+  - interval: 1m
+    path: /federate
+    params:
+      'match[]':
+        - 'up{instance=~"dr.*ht"}'
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: federate
+  namespace: monitoring
+  labels:
+    prometheus: federate
+spec:
+  ports:
+  - port: 30001
+    nodePort: 30005 #测试用，暴露出来看看能不能获取到metric的信息
+  type: NodePort
+---
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: federate
+  namespace: monitoring
+  labels:
+    prometheus: federate
+subsets:
+- addresses:
+  - ip: 211.137.172.23
+    hostname: prometheus-ht
+  ports:
+  - port: 30001

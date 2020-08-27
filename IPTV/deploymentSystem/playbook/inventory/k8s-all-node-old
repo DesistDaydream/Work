@@ -1,0 +1,35 @@
+[k8s_master_old]
+iptv-k8s-master-1.tjiptv.net ansible_host=10.0.13.77
+iptv-k8s-master-2.tjiptv.net ansible_host=10.0.13.82
+iptv-k8s-etcd-1.tjiptv.net ansible_host=10.0.13.78
+iptv-k8s-etcd-2.tjiptv.net ansible_host=10.0.13.80
+iptv-k8s-etcd-3.tjiptv.net ansible_host=10.0.13.81
+
+[k8s_node_old]
+iptv-k8s-node-1.tjiptv.net ansible_host=10.0.13.79
+iptv-k8s-node-2.tjiptv.net ansible_host=10.0.13.83
+iptv-k8s-node-3.tjiptv.net ansible_host=10.0.13.85
+iptv-k8s-node-4.tjiptv.net ansible_host=10.0.13.86
+iptv-k8s-node-5.tjiptv.net ansible_host=10.0.13.91
+iptv-k8s-node-6.tjiptv.net ansible_host=10.0.13.92
+iptv-k8s-node-7.tjiptv.net ansible_host=10.0.13.93
+iptv-k8s-node-8.tjiptv.net ansible_host=10.0.13.97
+iptv-k8s-node-9.tjiptv.net ansible_host=10.0.13.98
+iptv-k8s-node-10.tjiptv.net ansible_host=10.0.13.99
+iptv-k8s-node-11.tjiptv.net ansible_host=10.0.13.100
+iptv-k8s-node-12.tjiptv.net ansible_host=10.0.13.101
+iptv-k8s-node-13.tjiptv.net ansible_host=10.0.13.102
+iptv-k8s-node-14.tjiptv.net ansible_host=10.0.13.119
+iptv-k8s-node-15.tjiptv.net ansible_host=10.0.13.120
+iptv-k8s-node-16.tjiptv.net ansible_host=10.0.13.121
+iptv-k8s-node-17.tjiptv.net ansible_host=10.0.13.122
+iptv-k8s-node-18.tjiptv.net ansible_host=10.0.13.123
+iptv-k8s-node-19.tjiptv.net ansible_host=10.0.13.124
+
+[k8s_all_node_old:children]
+k8s_master_old
+k8s_node_old
+
+[k8s_all_node_old:vars]
+ansible_user=root
+ansible_password=XXXX

@@ -1,0 +1,4 @@
+- name: 查看测试环境宿主机资源占用情况
+  script: virtInfo.sh
+  register: info
+- debug: var=info.stdout_lines

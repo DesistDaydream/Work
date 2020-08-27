@@ -1,0 +1,11 @@
+docker:
+  version: 19.03.8
+  dataDir: /var/lib/docker
+  registryMirrors:
+  - https://ac1rmo5p.mirror.aliyuncs.com
+  execOpts:
+  - 'native.cgroupdriver=systemd'
+  options: '--default-ulimit nofile=1000000:1000000'
+#  insecureRegistries:
+#    - 100.64.2.52:9999
+#    - 100.64.1.31:9999

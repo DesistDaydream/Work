@@ -1,0 +1,113 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: snmp-metrics
+  namespace: monitoring
+  labels:
+    prometheus: snmp-metrics
+spec:
+  jobLabel: snmp
+  selector:
+    matchLabels:
+      prometheus: snmp-metrics
+  endpoints:
+  - interval: 180s
+    scrapeTimeout: 180s
+    port: snmp
+    params:
+      module: 
+      - if_mib
+      target:
+      - 211.137.172.27
+    path: "/snmp"
+    relabelings:
+    - action: replace
+      sourceLabels: 
+      - __param_target
+      targetLabel: instance
+  - interval: 180s
+    scrapeTimeout: 180s
+    port: snmp
+    params:
+      module: 
+      - if_mib
+      target:
+      - 211.137.172.1
+    path: "/snmp"
+    relabelings:
+    - action: replace
+      sourceLabels: 
+      - __param_target
+      targetLabel: instance
+  - interval: 180s
+    scrapeTimeout: 180s
+    port: snmp
+    params:
+      module: 
+      - if_mib
+      target:
+      - 43.247.4.159
+    path: "/snmp"
+    relabelings:
+    - action: replace
+      sourceLabels: 
+      - __param_target
+      targetLabel: instance
+  - interval: 180s
+    scrapeTimeout: 180s
+    port: snmp
+    params:
+      module: 
+      - if_mib
+      target:
+      - 43.247.4.129
+    path: "/snmp"
+    relabelings:
+    - action: replace
+      sourceLabels: 
+      - __param_target
+      targetLabel: instance
+  - interval: 180s
+    scrapeTimeout: 180s
+    port: snmp
+    params:
+      module: 
+      - if_mib
+      target:
+      - 10.10.100.254
+    path: "/snmp"
+    relabelings:
+    - action: replace
+      sourceLabels: 
+      - __param_target
+      targetLabel: instance
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: snmp-metrics
+  namespace: monitoring
+  labels: 
+    prometheus: snmp-metrics
+spec:
+  ports:
+  - port: 9116
+    nodePort: 30006     #测试用，暴露出来看该端口能否获得metrics
+    name: snmp
+    targetPort: snmp
+  type: NodePort
+---
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: snmp-metrics
+  namespace: monitoring
+  labels:
+    prometheus: snmp-metrics
+subsets:
+- addresses:
+  - ip: 10.10.100.110
+    hostname: k8s-monitor-agent-test
+  ports:
+  - port: 9116
+    name: snmp
