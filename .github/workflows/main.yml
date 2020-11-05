@@ -9,7 +9,9 @@ jobs:
       - name: 'Checkout'
         uses: actions/checkout@v2
       - name: 'Mirror to gitee'
-        uses: Yikun/hub-mirror-action@master
+        uses: pixta-dev/repository-mirroring-action@v1
         with:
-          target_repo_url: git@gitee.com:DesistDaydream/Work.git
-          ssh_private_key: ${{ secrets.GITEE_PRIVATE_KEY }}
+          target_repo_url: 
+            git@gitee.com:DesistDaydream/Work.git
+          ssh_private_key: 
+            ${{ secrets.GITEE_PRIVATE_KEY }}
