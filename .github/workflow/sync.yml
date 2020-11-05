@@ -9,7 +9,7 @@ jobs:
       - name: 'Checkout'
         uses: actions/checkout@v1
       - name: 'Mirror to gitee'
-        uses: DesistDaydream/Work
+        uses: DesistDaydream/Work@master
         with:
           target_repo_url:
             git@gitee.com:DesistDaydream/Work.git
