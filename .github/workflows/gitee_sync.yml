@@ -1,0 +1,17 @@
+name: Mirror this repos to Gitee
+on:
+  push:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Mirror this repos to Gitee
+      uses: Yikun/hub-mirror-action@master
+      with:
+        src: github/DesistDaydream
+        dst: gitee/DesistDaydream
+        dst_key: ${{ secrets.GITEE_PRIVATE_KEY }}
+        dst_token:  ${{ secrets.GITEE_TOKEN }}
+        static_list: "Work"
+        force_update: true
+ 
